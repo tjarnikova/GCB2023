@@ -1,4 +1,4 @@
-This folder contains scripts and outputs for the greenocean group's GCB submission.
+This folder contains scripts and outputs for the greenocean group's Global Carbon Budget submission for the year 2023.
 
 Contents:
 
