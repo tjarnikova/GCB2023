@@ -12,4 +12,4 @@ References:
 - The following notion page documents the code, forcing, run id's, etc: [NOTION](https://www.notion.so/GCB-2023-run-specifications-and-monitor-setup-81add128b34a4d87a7630e03fc542ee3)
 - The following google spreadsheet, editable by TJŠJ and viewable by all, contains a list of all variables required by the GCB, what the output files are, where they are made, etc: [SPREADSHEET](https://docs.google.com/spreadsheets/d/186mFWSIaPWu7X_RldiGPrPzIuqyNupUR7XwoCBkMaIk/edit?usp=sharing)
 - The following notebook contains a visualization of the output of this year's model runs and a comparison with last year's, where applicable:
-[NOTEBOOK]([https://github.com/tjarnikova/SOZONE/blob/master/GCB2023-visualiseAndMonitor/visualiseAllGCBOutputs.ipynb])
+[NOTEBOOK](https://nbviewer.org/github/tjarnikova/GCB2023/blob/main/notebooks/visualiseModelFlux.ipynb)
