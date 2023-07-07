@@ -12,25 +12,74 @@ module purge
 module add python/anaconda/2019.10/3.7
 source activate swamp2
 
-#run me from the login node otehrwise i get confused
-#python dateReformatUKESM.py
-#python createGCB_TJ_RECCAP.py -1
+#run script from login node with sbatch < runGCB.bsub
 
-#core request tier 1
-#for i in -1 #0 23 2 10 11 8 9 24
-#do
-#    echo "variable $i"
-#    python createGCB_TJ_RECCAP.py $i
-#done
+#Where are these var ids labeled? (in order of appearance in 2023 GCB protocol pdf):
+# https://docs.google.com/spreadsheets/d/186mFWSIaPWu7X_RldiGPrPzIuqyNupUR7XwoCBkMaIk/edit?usp=sharing
 
-# for i in 0 23 2 10 11 8 9 24
-#  do
-#      echo "variable $i"
-#      python createGCB_TJ_RECCAP.py $i
-#  done
+#core request tier 1, comment out what you don't want etc
+python createGCB_RECCAP.py -1 #varID 1-6: fgco2_glob, fgco2_reg, intDIC_1994_glob, intDIC_1994_reg, intDIC_2007_glob, intDIC_2007_reg
+python createGCB_RECCAP.py 0 #varID 7: fgco2
+python createGCB_RECCAP.py 23 #varID 8: sfco2
+python createGCB_RECCAP.py 2 #varID 9: fice
+python createGCB_RECCAP.py 10 #varID: 10 dissicos
+python createGCB_RECCAP.py 11 #varID: 11 talkos
+python createGCB_RECCAP.py 8 #varID 12 tos
+python createGCB_RECCAP.py 9 #varID 13 sos
+python createGCB_RECCAP.py 24 #varID 24 intdic
 
-for i in 23
- do
-     echo "variable $i"
-     python createGCB_TJ_RECCAP.py $i
- done
+#tier 1 evaluation TD
+#AMOC
+#SO_SSS
+#SO_SI
+#Revelle
+
+#ancillary data TD
+# area
+# volume
+# mask_sfc
+# mask_vol
+# Area_tot_native
+# Vol_tot_native
+# Atm_CO2
+# RivCin
+# Burial
+
+#tier 2 full reccap
+python createGCB_RECCAP.py 25 #varID 28: fgo2
+python createGCB_RECCAP.py 3 #varID 29: intpp
+python createGCB_RECCAP.py 4 #varID 30: epc100
+python createGCB_RECCAP.py 5 #varID 31: intpp
+#32: epc100type / epc1000type
+python createGCB_RECCAP.py 7 #varID 33: epcalc100
+# Kw
+# pco2atm
+# alpha
+python createGCB_RECCAP.py 22 #varID 37		no3os
+python createGCB_RECCAP.py 21  #varID 38		po4os
+python createGCB_RECCAP.py 12 #varID 39		sios
+python createGCB_RECCAP.py 13 #varID 40		dfeos
+python createGCB_RECCAP.py 14 #varID 41		o2os
+python createGCB_RECCAP.py 15 #varID 42		intphyc
+python createGCB_RECCAP.py 16 #varID 43		intphynd
+python createGCB_RECCAP.py 17 #varDID 44		intdiac
+python createGCB_RECCAP.py 18 #varDID 45		intzooc
+python createGCB_RECCAP.py 19 #varDID 46		chlos
+python createGCB_RECCAP.py 20 #varDID 47		mld
+# zeu
+# zos
+
+# -- 3d --
+python createGCB_RECCAP.py 26 #varID 50		dissic	26
+python createGCB_RECCAP.py 27 #varID 51		talk	27
+python createGCB_RECCAP.py 28 #varID 52		thetao	28
+python createGCB_RECCAP.py 29 #varID 53		so	29
+python createGCB_RECCAP.py 30 #varID 54		epc	30
+python createGCB_RECCAP.py 34 #varID 55		no3	34
+python createGCB_RECCAP.py 31 #varID 56		po4	31
+python createGCB_RECCAP.py 32 #varID 57		si	32
+python createGCB_RECCAP.py 33 #varID 58		o2	33
+
+# 		Tier3 (to 1850)	
+# 59		fgco2_glob	
+# 60		fgco2_reg	
