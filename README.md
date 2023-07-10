@@ -6,6 +6,7 @@ Contents:
 - `GCB2023_ocean_model_protocol_final.pdf`: protocol as received from J. Hauck
 - `./scripts` contains scripts that produce output, with the batch submission file `runGCB.bsub`, that can be run using `sbatch < runGCB.bsub` 
     - Note: currently `runGCB.bsub` requires some python packages that are contained in an environment called swamp2 (notably arrow), if you are running this in the future and it's not working, check imports.
+    - scripts used to make each variable are documented in SPREADSHEET (see References)
 - `./notebooks` contains notebooks for visualizing outputs
 
 References:
