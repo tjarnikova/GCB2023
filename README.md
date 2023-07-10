@@ -14,5 +14,5 @@ References:
 - The following google spreadsheet, editable by TJŠJ and viewable by all, contains a list of all variables required by the GCB, what the output files are, where they are made, etc: [SPREADSHEET](https://docs.google.com/spreadsheets/d/186mFWSIaPWu7X_RldiGPrPzIuqyNupUR7XwoCBkMaIk/edit?usp=sharing)
 - The following notebook contains a visualization of the output of this year's model runs and a comparison with last year's, where applicable:
 [NOTEBOOK](https://nbviewer.org/github/tjarnikova/GCB2023/blob/main/notebooks/visualiseAllGCBOutputs.ipynb)
-- The following notebook contains a visualization of the model air-sea CO2 flux and a comparison with the TOM12 version:
-[NOTEBOOK](https://nbviewer.org/github/tjarnikova/GCB2023/blob/main/notebooks/visualiseAllGCBOutputs.ipynb)
+- The following notebook contains a visualization of the submitted model air-sea CO2 flux (version CAL12) and a comparison with the TOM12 version and the 2022 version:
+[NOTEBOOK](https://nbviewer.org/github/tjarnikova/GCB2023/blob/main/notebooks/visualiseModelFlux.ipynb)
