@@ -3,16 +3,27 @@
 ### produces data into resultsdir
 
 #### inputs, etc
-resultsdir = '/gpfs/data/greenocean/GCB/GCB2023/submissionData2023/CAL12/' #tom12 model version, change to CAL12 if nec
+resultsdir = '/gpfs/data/greenocean/GCB/GCB2023/submissionData2023/CAL12/'
+runs = ["TOM12_TJ_GEA1", "TOM12_TJ_GEB1", "TOM12_TJ_GEC1", "TOM12_TJ_GED1"]
+# resultsdir = '/gpfs/data/greenocean/GCB/GCB2023/submissionData2023/TOM12/'
+# runs = ["TOM12_TJ_GEA0", "TOM12_TJ_GEB0", "TOM12_TJ_GEC0", "TOM12_TJ_GED0"] #tom12 model version, change to CAL12 if nec
 horse = True #are we running?
 dave2022 = False #for producing dave's GCB 2022 model output, for comparison
 # the range of years to generate outputs for.
+if dave2022:
+    basedir="/gpfs/afm/greenocean/software/runs/GCB/2022/" #GCB run
+    resultsdir ="/gpfs/data/greenocean/GCB/GCB2023/submissionData2023/GCB2022_inttime/"
+    # The names of the A,B,C,D simulations
+    runs = ["TOM12_DW_GA01", "TOM12_DW_GB01", "TOM12_DW_GC01", "TOM12_DW_GD01"] # 2021 submission for RECCAP as THEY want 4, the princesses.
+    # Simulation ids (named after the year submission year, not the final year of simulation)
+    #sim = ["DW2022_A","DW2022_B","DW2022_C","DW2022_D"]
+    
 yrFrom = 1959
 yrTo = 2022
 ## runs to run for
 ### TJ 
 basedir="/gpfs/data/greenocean/software/runs/"
-runs = ["TOM12_TJ_GEA1", "TOM12_TJ_GEB1", "TOM12_TJ_GEC1", "TOM12_TJ_GED1"] 
+
     # Simulation ids (named after the year submission year, not the final year of simulation)
 sim = ["A","B","C","D"]
 
@@ -46,12 +57,7 @@ print(f'today: {timestamp}')
 # e.g. to create all the links run something like this: ls -1 ../../../TOM12_DW_GA01/ORCA2_1m_*.nc | awk '{print "ln -s "$1}' | bash
 
 
-if dave2022:
-    basedir="/gpfs/afm/greenocean/software/runs/GCB/2022/" #GCB run
-    # The names of the A,B,C,D simulations
-    runs = ["TOM12_DW_GA01", "TOM12_DW_GB01", "TOM12_DW_GC01", "TOM12_DW_GD01"] # 2021 submission for RECCAP as THEY want 4, the princesses.
-    # Simulation ids (named after the year submission year, not the final year of simulation)
-    sim = ["DW2022_A","DW2022_B","DW2022_C","DW2022_D"]
+
 
 #sim = ['A', 'B', 'C', 'D']
 # We need the pressure at the surface for a conversion to fugacity
@@ -292,6 +298,9 @@ if OutputNumber == -1:
             nc_v_f = nc_out_id.createVariable("fgco2_reg", 'f', ('TIME', 'REGION'))
             nc_v_f.setncattr("missing_value", np.array(1E20,'f'))
             nc_v_f.setncattr("units", "PgC/yr")
+            nc_v_f.setncattr("region attributes", "0 = South, 1 = Tropics, 2 = North")
+            
+            
             # nc_v_f.setncattr("time_origin", time_origin_string)   < if you do it like this all yr data get converted to times which is BAD
             # nc_v_f.setncattr("units", time_origin_units)
 
@@ -355,10 +364,10 @@ if OutputNumber == -1:
                     tDim = var.shape[0]
                     annualTotal = 0
                     for t in range(0,tDim):
-                        monthlyTotalGlob = np.nansum(varNanGlob[t,:,:] * mask_area[:,:] * units / tDim)
-                        monthlyTotalS = np.nansum(varNanS[t,:,:] * mask_area[:,:] * units / tDim)
-                        monthlyTotalT = np.nansum(varNanT[t,:,:] * mask_area[:,:] * units / tDim)
-                        monthlyTotalN = np.nansum(varNanN[t,:,:] * mask_area[:,:] * units / tDim)
+                        monthlyTotalGlob = np.nansum(varNanGlob[t,:,:] * mask_area[:,:] * units )#/ tDim this shouldn't be divided by months (TJ, you should calculate the pGc/year for each month (the mean of the 12 months will give you the pgC/year total)
+                        monthlyTotalS = np.nansum(varNanS[t,:,:] * mask_area[:,:] * units )#/ tDim)/ tDim)
+                        monthlyTotalT = np.nansum(varNanT[t,:,:] * mask_area[:,:] * units )#/ tDim)/ tDim)
+                        monthlyTotalN = np.nansum(varNanN[t,:,:] * mask_area[:,:] * units )#/ tDim)
                         # time dimensiion value
                         dt = datetime.datetime(y,t+1,12,0,0,0)
                         secs = (dt - origin).total_seconds()
