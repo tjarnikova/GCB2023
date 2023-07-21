@@ -1,0 +1,55 @@
+#!/bin/sh
+#BSUB -q mellanox-ib
+#BSUB -n 56
+#BSUB -R 'cu[maxcus=1]'
+#BSUB -R 'span[ptile=28]'
+#BSUB -oo planktom-GR.log
+#BSUB -eo planktom-ER.log
+#BSUB -x
+. /etc/profile
+
+module purge
+module add  gcc/4.9.3 mpi/openmpi/2.1.0/gcc/mellanox perl/5.24.1/gcc hdf5/parallel/1.8.18/gcc-openmpi-mellanox netcdf/parallel/4.4.1.1/gcc-mellanox
+module list
+set -x
+
+YEARP=$YEARN
+cd ~/scratch/$ENAM
+export MYAPP=./opa
+
+date
+START=`date`
+mpirun -np $LSB_DJOB_NUMPROC $MYAPP
+date
+FINISH=`date`
+echo $START $FINISH $ENAM $YEARN >> ~/simulations
+eval YEARN=`expr $YEARN + 1`
+export YEARP YEARN
+timestep=`awk '{printf "%.8d\n", $0}' time.step`
+mv time.step old.time.step
+if [ -f ORCA2_${timestep}_restart_0000.nc ]; then
+  bsub -Jptom_totals < run_totals.sh
+fi
+
+if [ -f ORCA2_${timestep}_restart_0000.nc ]; then
+  mv restart.nc restart_first_year.nc
+#  mv restart_trc.nc  restart_trc_first_year.nc
+  mv restart_ice_in.nc restart_ice_in_first_year.nc
+  mv EMPave.dat EMPave_${YEARP}.dat
+  i=( 00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 )
+  echo $i
+  for proc in ${i[*]}
+    do
+    ln -fs ORCA2_${timestep}_restart_00${proc}.nc restart_00${proc}.nc
+    ln -fs ORCA2_${timestep}_restart_ice_00${proc}.nc restart_ice_in_00${proc}.nc
+    ln -fs ORCA2_${timestep}_restart_trc_00${proc}.nc restart_trc_00${proc}.nc
+  done
+  ln -fs EMPave_${YEARP}.dat EMPave_old.dat
+  if [ -f submit.$YEARN ]; then
+    bsub -J s${SIM}${YEARN}< submit.$YEARN
+  else
+    if [ $YEARP -lt $YEARL ]; then
+      bsub -J ${SIM}$YEARN < dgom
+    fi
+  fi
+fi

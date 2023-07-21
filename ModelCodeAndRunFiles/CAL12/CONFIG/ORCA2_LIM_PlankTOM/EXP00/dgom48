@@ -1,0 +1,59 @@
+#!/bin/sh
+#SBATCH --mail-type=NONE
+#SBATCH --qos=ib
+#SBATCH -p ib-24-96
+#SBATCH -t 1:00:00
+#SBATCH --ntasks=48
+#SBATCH --ntasks-per-node=24
+#SBATCH -o planktom-GR.log
+#SBATCH -e planktom-ER.log
+module purge
+module add gcc/9.2.0 netcdf/4.7.4/parallel/gcc-openmpi hdf5/1.10.6/gcc-openmpi java/jdk1.8.0_231 mpi/openmpi/4.0.3/gcc/ib perl/5.30.2 ferret/7.6.0
+module list
+set -x
+
+cd ~/scratch/$ENAM
+export MYAPP=./opa
+date
+START=`date`
+mpirun $MYAPP
+date
+\rm -f *grid_[UVW]* *icemod*
+FINISH=`date`
+echo $START $FINISH $ENAM $YEARN $SLURM_NPROCS >> ~/simulations
+timestep=`awk '{printf "%.8d\n", $0}' time.step`
+export timestep
+mv time.step old.time.step
+STAMP=`date "+%R"`
+mv ocean.output ocean.output${YEARN}_${STAMP}
+if [ -f ORCA2_${timestep}_restart_0000.nc ]; then
+ if [ ! -f restart_first_year.nc ];then
+  mv restart.nc restart_first_year.nc
+  mv restart_trc.nc  restart_trc_first_year.nc
+  mv restart_ice_in.nc restart_ice_in_first_year.nc
+ fi
+  /gpfs/env/e031/nemo_v3.6/ADA12/REBUILD_NEMO/rebuild_nemo ORCA2_${timestep}_restart_trc $SLURM_NPROCS && rm ORCA2_${timestep}_restart_trc_00??.nc
+  ln -fs ORCA2_${timestep}_restart_trc.nc restart_trc.nc
+  sbatch run_totals.sh
+  mv EMPave.dat EMPave_${YEARN}.dat
+  ln -fs EMPave_${YEARN}.dat EMPave_old.dat
+  /gpfs/env/e031/nemo_v3.6/ADA12/REBUILD_NEMO/rebuild_nemo ORCA2_${timestep}_restart $SLURM_NPROCS && rm ORCA2_${timestep}_restart_00??.nc
+  /gpfs/env/e031/nemo_v3.6/ADA12/REBUILD_NEMO/rebuild_nemo ORCA2_${timestep}_restart_ice $SLURM_NPROCS && rm ORCA2_${timestep}_restart_ice_00??.nc
+  \rm nam_rebuild
+  ln -fs ORCA2_${timestep}_restart.nc restart.nc
+  ln -fs ORCA2_${timestep}_restart_ice.nc restart_ice_in.nc
+  if [ -f namelist_ref_continue -a ! -f namelist_ref_start ];then
+    mv namelist_ref namelist_ref_start
+    cp namelist_ref_continue namelist_ref
+  fi
+  YEARP=$YEARN
+  eval YEARN=`expr $YEARN + 1`
+  export YEARP YEARN
+  if [ -f submit.$YEARN ]; then
+    sbatch submit.$YEARN
+  else
+    if [ $YEARP -lt $YEARL ]; then
+      sbatch -J ${SIM}${YEARN} dgom
+    fi
+  fi
+fi

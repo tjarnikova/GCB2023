@@ -1,0 +1,201 @@
+       SUBROUTINE bgcprg(kt)
+#if defined key_planktom &&  defined key_top
+!!!---------------------------------------------------------------------
+
+!!!
+!!!                       ROUTINE bgcprg
+!!!                     *****************
+!!!
+!!!  PURPOSE :
+!!!  ---------
+!!!     Call Biological sources and sinks subroutines
+!!!
+!!   METHOD :
+!!   -------
+!!      
+!!
+!!   INPUT :
+!!   -----
+!!      argument
+!!              ktask           : task identificator
+!!              kt              : time step
+!!      common
+!!              all the common defined in opa
+!!
+!!
+!!   OUTPUT :                   : no
+!!   ------
+!!
+!!   WORKSPACE :
+!!   ---------
+!!
+!!   EXTERNAL :
+!!   --------
+!!
+!!   MODIFICATIONS:
+!!   --------------
+!!      original  : E. Maier-Reimer (GBC 1993): h3cprg
+!!      additions : O. Aumont (1998)
+!!      additions : C. Le Quere (1999)
+!!      additions : O. Aumont (2001)
+!!      additions : O. Aumont , EK (05/2001): add h3cadj 
+!!----------------------------------------------------------------------
+!! parameters and commons
+!! ======================
+      USE trp_trc
+      USE sms_planktom
+      USE oce_trc
+      USE lbclnk
+      USE lib_mpp
+      IMPLICIT NONE
+!!----------------------------------------------------------------------
+!! local declarations
+!! ==================
+      INTEGER ktask, kt, jn
+      INTEGER ji, jj, jk
+      REAL(wp) total(jptra), totaf(jptra), totoc, totof, units
+!
+!      IF (kt .EQ. nit000) THEN
+!        qcumul = 0.
+!        total = 0.
+!        DO jn = 1, jptra
+!          DO jk = 1, jpk-1
+!            DO jj = 2, nlcj-1
+!              DO ji = 2, nlci-1
+!                total(jn) = total(jn)+trn(ji,jj,jk,jn)*volumt(ji,jj,jk)
+!              END DO
+!            END DO
+!          END DO
+!        END DO
+#  if defined key_mpp_mpi
+!        CALL mpp_sum(total,jptra)
+#  endif
+!        totoc=total(jpdoc)+total(jppoc)+total(jpgoc)+total(jpmic)+total(jpmes) &
+!     &    +total(jpdia)+total(jpmix)+total(jpcoc)
+!        IF (lwp) WRITE(numout,*) 'bgcprg start C,P,Fe,O2,jptra' &
+!     &    ,totoc+total(jpdic),totoc+total(jppo4) &
+!     &    ,total(jpsfe)+total(jpbfe)+(total(jpmic) &
+!     &    +total(jpmes))*ferat3+total(jpfer) &
+!     &    +total(jpdfe)+total(jpnfe)+total(jpcfe) &
+!     &    ,total(jpoxy)-o2ut*totoc,total
+!      END IF
+!
+! Compute chemical variables
+! --------------------------
+!
+          CALL bgcche
+!......................................................................
+!
+! Interpolate chemical variables
+! ------------------------------
+!
+          CALL bgcint(kt)
+!
+!......................................................................
+!
+! Compute CaCO3 saturation
+! ------------------------
+!
+          CALL bgclys
+!
+!......................................................................
+!
+! Compute biology (POC)
+! ------------------------------------
+!
+          CALL bgcbio(kt)
+!
+!......................................................................
+!
+! Close budgets
+! ------------------------------------
+!
+          CALL bgcsed
+          IF ( kt == nitend ) THEN
+#  if defined key_mpp_mpi
+!            CALL mpp_sum(sedcor,5)
+#  endif
+#    if defined key_trc_dms
+            IF(lwp) WRITE(numout,*)' dms sinks converted to sources ', &
+     &          dms_snkcount, ' times'
+             IF(lwp) WRITE(numout,*)' dmd sinks converted to sources ', &
+     &          dmd_snkcount, ' times'
+#    endif
+!            units = rfact/raass*100.
+!            IF(lwp) WRITE(numout,*)' bottom water correction lacked ',  &
+!     &        sedcor,' mol Si, C, Fe, DOC, Alk, which is ',             &
+!     &        sedcor(1)/extinp(1)*units,sedcor(2)/extinp(2)*units,      &
+!     &        sedcor(3)/extinp(3)*units,sedcor(4)/extinp(4)*units,      &
+!     &        sedcor(5)/extinp(5)*units,'% of external inputs.'
+          ENDIF
+!
+!......................................................................
+!
+! Compute surface fluxes
+! ----------------------
+!
+          CALL bgcflx
+!      IF (kt .EQ. nit000) THEN
+!        totaf = 0.
+!        DO jn = 1, jptra
+!          DO jk = 1, jpk-1
+!            DO jj = 2, nlcj-1
+!              DO ji = 2, nlci-1
+!                totaf(jn) = totaf(jn)+trn(ji,jj,jk,jn)*volumt(ji,jj,jk)
+!              END DO
+!            END DO
+!          END DO
+!        END DO
+#  if defined key_mpp_mpi
+!        CALL mpp_sum(totaf,jptra)
+#  endif
+!        totof=totaf(jpdoc)+totaf(jppoc)+totaf(jpgoc)+totaf(jpmic)+totaf(jpmes) &
+!     &    +totaf(jpdia)+totaf(jpmix)+totaf(jpcoc)
+!        IF (lwp) WRITE(numout,*) 'bgcprg end C,P,Fe,O2,jptra' &
+!     &    ,totof+totaf(jpdic)-totoc-total(jpdic) &
+!     &    ,totof+totaf(jppo4)-totoc-total(jppo4) &
+!     &    ,totaf(jpsfe)+totaf(jpbfe)+(totaf(jpmic) &
+!     &    +totaf(jpmes))*ferat3+totaf(jpfer) &
+!     &    +totaf(jpdfe)+totaf(jpnfe)+totaf(jpcfe) &
+!     &    -(total(jpsfe)+total(jpbfe)+(total(jpmic) &
+!     &    +total(jpmes))*ferat3+total(jpfer) &
+!     &    +total(jpdfe)+total(jpnfe)+total(jpcfe)) &
+!     &    ,totaf(jpoxy)-o2ut*(totof)-total(jpoxy)+o2ut*totoc,totaf
+!      END IF
+!      IF (kt .EQ. nitend) THEN
+!        totaf = 0.
+!        DO jn = 1, jptra
+!          DO jk = 1, jpk-1
+!            DO jj = 2, nlcj-1
+!              DO ji = 2, nlci-1
+!                totaf(jn) = totaf(jn)+trn(ji,jj,jk,jn)*volumt(ji,jj,jk)
+!              END DO
+!            END DO
+!          END DO
+!        END DO
+#  if defined key_mpp_mpi
+!        CALL mpp_sum(totaf,jptra)
+#  endif
+!        totof=totaf(jpdoc)+totaf(jppoc)+totaf(jpgoc)+totaf(jpmic)+totaf(jpmes) &
+!     &    +totaf(jpdia)+totaf(jpmix)+totaf(jpcoc)
+!        IF (lwp) WRITE(numout,*) 'bgcprg end C,P,Fe,O2,jptra' &
+!     &    ,totof+totaf(jpdic)-totoc-total(jpdic)-qcumul(1) &
+!     &    ,totof+totaf(jppo4)-totoc-total(jppo4) &
+!     &    ,totaf(jpsfe)+totaf(jpbfe)+(totaf(jpmic) &
+!     &    +totaf(jpmes))*ferat3+totaf(jpfer) &
+!     &    +totaf(jpdfe)+totaf(jpnfe)+totaf(jpcfe) &
+!     &    -(total(jpsfe)+total(jpbfe)+(total(jpmic) &
+!     &    +total(jpmes))*ferat3+total(jpfer) &
+!     &    +total(jpdfe)+total(jpnfe)+total(jpcfe)) &
+!     &    ,totaf(jpoxy)-o2ut*(totof)-total(jpoxy)+o2ut*totoc-qcumul(2),totaf
+!      END IF
+      DO jn=1 , jptra
+        CALL lbc_lnk(trn(:,:,:,jn), 'T', 1. )
+        CALL lbc_lnk(tra(:,:,:,jn), 'T', 1. )
+      END DO
+      trb(:,:,:,:)=trn(:,:,:,:)
+#endif
+!
+      RETURN
+      END
+

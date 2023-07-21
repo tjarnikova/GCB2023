@@ -1,0 +1,22 @@
+#!/bin/ksh
+# 
+# #######################################
+# if needed,
+# compilation of the NetCDF library
+# #######################################
+#
+#   cd NetCDF/netcdf-3.5.1/src
+#   ./configure
+#   # I had problems with cxx compilation. 
+#   # Thus I compile everything except the cxx part.
+#   make libsrc/all ncdump/all ncgen/all fortran/all f90/all
+#   make test
+#   # you will get an error message for cxx test (the last one)
+#   # but we don't care! You can install the library
+#   make libsrc/install fortran/install f90/install ncdump/install ncgen/install
+#   cd ../../..
+#
+# #######################################
+# if you want to play with F2KCLI
+mpif90  -L/gpfs/grace/netcdf-4.2/gnu/lib -lnetcdff -I/gpfs/grace/netcdf-4.2/gnu/include -o totaltrd_tom12 totalTOM12.f
+#mpif90  totalTOM10.f -g -o totaltrd_tom10 -L/gpfs/grace/netcdf-4.2/gnu/lib  -L/gpfs/grace/netcdf-4.3/gnu/lib   -I/gpfs/grace/netcdf-4.2/gnu/include -I/gpfs/grace/netcdf-4.3/gnu/include -lnetcdff -lnetcdf

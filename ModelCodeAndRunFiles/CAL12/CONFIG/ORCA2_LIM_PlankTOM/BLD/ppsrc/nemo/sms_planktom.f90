@@ -1,0 +1,611 @@
+/* Copyright (C) 1991-2012 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
+
+
+/* This header is separate from features.h so that the compiler can
+   include it implicitly at the start of every compilation.  It must
+   not itself include <features.h> or any other header that includes
+   <features.h> because the implicit include comes before any feature
+   test macros that may be defined in a source file before it first
+   explicitly includes a system header.  GCC knows the name of this
+   header in order to preinclude it.  */
+
+/* We do support the IEC 559 math functionality, real and complex.  */
+
+/* wchar_t uses ISO/IEC 10646 (2nd ed., published 2011-03-15) /
+   Unicode 6.0.  */
+
+/* We do not support C11 <threads.h>.  */
+
+MODULE sms_planktom
+!!---------------------------------------------------------------------
+!!  TOP 1.0,  LOCEAN-IPSL (2005)
+!! This software is governed by the CeCILL licence see modipsl/doc/NEMO_CeCILL.txt
+!!----------------------------------------------------------------------
+   USE par_oce
+   USE par_trc
+   USE par_planktom
+   IMPLICIT NONE
+   PUBLIC
+!!----------------------------------------------------------------------
+!!
+!! COMMON/cchem1/ : Variable for chemistry of the CO2 cycle
+!!
+!! ---------------------------------------------------------------------
+!!
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: akb3, ak13, ak23
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: aksara, aksp, co3, hi
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: pihi
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:) :: pih2co3
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: borat, hco3, discarb
+!!
+!!----------------------------------------------------------------------
+!!
+!! COMMON/cchem2/ : Variable for chemistry of the CO2 cycle
+!!
+!! ---------------------------------------------------------------------
+!!
+! 
+      REAL, PUBLIC, SAVE :: atcox
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:) ::  h2co3
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: akw3
+!!
+!!----------------------------------------------------------------------
+!!
+!! COMMON/cchem3/ : Variable for chemistry of the CO2 cycle
+!!
+!! ---------------------------------------------------------------------
+!!
+!!      VARIABLE           TYPE    PURPOSE.
+!!      --------           ----    --------
+!!
+!!      *THIRD*            REAL    1./3. HALF PRECISION
+!!      *THOUSI*           REAL    0.001 HALF PRECICION
+!!      *SMICR*            REAL    1E-6 HALF PRECISION
+!!      *SALCHL*           REAL    CONVERSION FACTOR TO CALCULATE CHLORID
+!!                                 CONCENTRATION
+!!                                 S(O/OO)=1.80655*CL(O/OO)
+!!                                 KALLE/DIETRICH , P. 60, OR
+!!                                 WOOSTER ET AL., 1969.
+!!      *TEMZER*           REAL    ZERO DEG C EXPRESSED AS ABS. TEMPERATURE
+!!                                 (DEG KELVIN)
+!!      *PERC*             REAL    0.01 HALF PRECISION
+!!      *AKCC1*            REAL    COEFFICIENT FOR EMPIRICALLY DETERMINED
+!!                                 APPARENT SOLUBILITY PRODUCT K'SP OF
+!!                                 CALCITE (INGLE, 1800, EQ. 6)
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *AKCC2*            REAL    COEFFICIENT FOR EMPIRICALLY DETERMINED
+!!                                 APPARENT SOLUBILITY PRODUCT K'SP OF
+!!                                 CALCITE (INGLE, 1800, EQ. 6)
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *AKCC3*            REAL    COEFFICIENT FOR EMPIRICALLY DETERMINED
+!!                                 APPARENT SOLUBILITY PRODUCT K'SP OF
+!!                                 CALCITE (INGLE, 1800, EQ. 6)
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *AKCC4*            REAL    COEFFICIENT FOR EMPIRICALLY DETERMINED
+!!                                 APPARENT SOLUBILITY PRODUCT K'SP OF
+!!                                 CALCITE (INGLE, 1800, EQ. 6)
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *ARAFRA*           REAL    FRACTION OF ARAGONITE IN BIOGENIC CACO3
+!!                                 PARTICLES (E.G. 0.3 FOR 30 PERCENT)
+!!      *CALFRA*           REAL    FRACTION OF CALCITE IN BIOGENIC CACO3
+!!                                 PARTICLES (E.G. 0.3 FOR 30 PERCENT)
+!!      *ARACAL*           REAL    FACTOR TO CONVERT APP. CALCITE SOLUBILITY
+!!                                 PRODUCT (0 DBAR) TO THE APP. SOLUBILITY
+!!                                 PRODUCT OF ARAGONITE (BERNER, 1976;
+!!                                 CF. BROECKER ET AL., 1982)
+!!      *DEVK1*            REAL    COEFFICIENT FOR SEAWATER PRESSURE CORRECTION
+!!                                 OF 1. DISSOCIATION CONSTANT OF CARBONIC
+!!                                 ACID AFTER CULBERSON AND PYTKOWICZ, 1968
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *DEVK2*            REAL    COEFFICIENT FOR SEAWATER PRESSURE CORRECTION
+!!                                 OF 2. DISSOCIATION CONSTANT OF CARBONIC
+!!                                 ACID AFTER CULBERSON AND PYTKOWICZ, 1968
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *DEVKB*            REAL    COEFFICIENT FOR SEAWATER PRESSURE CORRECTION
+!!                                 OF 1. DISSOCIATION CONSTANT OF BORIC
+!!                                 ACID AFTER CULBERSON AND PYTKOWICZ, 1968
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *DEVK1T*           REAL    COEFFICIENT FOR SEAWATER PRESSURE CORRECTION
+!!                                 OF FIRST DISSOCIATION CONSTANT OF CARBONIC
+!!                                 ACID AFTER CULBERSON AND PYTKOWICZ, 1968
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *DEVK2T*           REAL    COEFFICIENT FOR SEAWATER PRESSURE CORRECTION
+!!                                 OF SECOND DISSOCIATION CONSTANT OF CARBONIC
+!!                                 ACID AFTER CULBERSON AND PYTKOWICZ, 1968
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *DEVKBT*           REAL    COEFFICIENT FOR SEAWATER PRESSURE CORRECTION
+!!                                 OF DISSOCIATION CONSTANT OF BORIC
+!!                                 ACID AFTER CULBERSON AND PYTKOWICZ, 1968
+!!                                 (CF. BROECKER ET AL., 1982)
+!!      *DEVKS*            REAL    COEFFICIENT FOR PRESSURE CORRECTION OF
+!!                                 SOLUBILITY PRODUCT OF CALCITE OR ARAGONITE
+!!                                 AFTER EDMOND AND GIESKES (1970), P. 1285
+!!                                 (REFERENCE TO CULBERSON AND PYTKOWICZ, 1968,
+!!                                 AS DONE IN BROECKER ET AL., 1982, IS
+!!                                 NOT CORRECT)
+!!      *DEVKST*           REAL    COEFFICIENT FOR PRESSURE CORRECTION OF
+!!                                 SOLUBILITY PRODUCT OF CALCITE OR ARAGONITE
+!!                                 AFTER EDMOND AND GIESKES (1970), P. 1285,
+!!                                 IN TERM WITH TEMPERATURE
+!!                                 (REFERENCE TO CULBERSON AND PYTKOWICZ, 1968,
+!!                                 AS DONE IN BROECKER ET AL., 1982, IS
+!!                                 NOT CORRECT)
+!!      *RGAS*             REAL    UNIVERSAL GAS CONSTANT (BOLTZMANN'S CONSTANT
+!!                                 TIMES AVOGADRO'S CONSTANT =
+!!                                 1.3804E-16*6.023*10E+23=8.3143E+7 ERG/GRD*MOL=
+!!                                 83.143E+6 ERG/GRD*MOL=8.3143 J/K*MOL)
+!!                                 MULTIPLIED WITH 10 (TO ACCOUNT FOR
+!!                                 CHANGE FROM BAR TO DBAR)
+!!                                 (CF. EDMOND AND GIESKES, 1970. P. 1285,
+!!                                 BROECKER ET AL., 1982, P. 79)
+!!      *BOR1*             REAL    TOTAL BORON CONTENT IN G/KG AT CL=19 O/OO
+!!                                 (S=35)
+!!                                 (CF. RILEY AND SKIRROW, VOL. 1, P. 648)
+!!      *BOR2*             REAL    INVERSE OF ATOMIC WEIGHT OF BORON FOR
+!!                                 CONVERTING SPECIFIC TOTAL BORATE IN
+!!                                 CONCENTRATIONS
+!!      *OXYCO*            REAL    INVERS OF NORMAL MOLAL VOLUME OF AN
+!!                                 IDEAL GAS [CM**-3]
+!!      *C00*              REAL    VOLUMETRIC SOLUBILITY CONSTANT A1 FOR
+!!                                 THE SOLUBILITY OF CO2 IN ML/L FROM AIR
+!!                                 AT ONE ATMOSPHERE (WEISS, 1974)
+!!      *C01*              REAL    VOLUMETRIC SOLUBILITY CONSTANT A2 FOR
+!!                                 THE SOLUBILITY OF CO2 IN ML/L FROM AIR
+!!                                 AT ONE ATMOSPHERE (WEISS, 1974)
+!!      *C02*              REAL    VOLUMETRIC SOLUBILITY CONSTANT A3 FOR
+!!                                 THE SOLUBILITY OF CO2 IN ML/L FROM AIR
+!!                                 AT ONE ATMOSPHERE (WEISS, 1974)
+!!      *C03*              REAL    VOLUMETRIC SOLUBILITY CONSTANT B1 FOR
+!!                                 THE SOLUBILITY OF CO2 IN ML/L FROM AIR
+!!                                 AT ONE ATMOSPHERE (WEISS, 1974)
+!!      *C04*              REAL    VOLUMETRIC SOLUBILITY CONSTANT B2 FOR
+!!                                 THE SOLUBILITY OF CO2 IN ML/L FROM AIR
+!!                                 AT ONE ATMOSPHERE (WEISS, 1974)
+!!      *C05*              REAL    VOLUMETRIC SOLUBILITY CONSTANT B3 FOR
+!!                                 THE SOLUBILITY OF CO2 IN ML/L FROM AIR
+!!                                 AT ONE ATMOSPHERE (WEISS, 1974)
+!!      *C10*              REAL    COEFF. FOR 1. H2CO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *C11*              REAL    COEFF. FOR F1. H2CO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *C12*              REAL    COEFF. FOR 1. H2CO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *C13*              REAL    COEFF. FOR 1. H2CO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *C20*              REAL    COEFF. FOR 2. H2CO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *C21*              REAL    COEFF. FOR 2. H2CO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *C22*              REAL    COEFF. FOR 2. H2CO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *C23*              REAL    COEFF. FOR 2. H2CO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *CB0*              REAL    COEFF. FOR 1. H3BO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *CB1*              REAL    COEFF. FOR 1. H3BO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *CB2*              REAL    COEFF. FOR 1. H3BO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *CB3*              REAL    COEFF. FOR 1. H3BO3 DISSOC. CONST. AFTER
+!!                                 EDMOND AND GIESKES (1970)
+!!      *CW0*              REAL    COEFF. FOR KW (DICKSON AND RILEY, 1979)
+!!      *CW1*              REAL    COEFF. FOR KW (DICKSON AND RILEY, 1979)
+!!      *CW2*              REAL    COEFF. FOR KW (DICKSON AND RILEY, 1979)
+!!                                 (CORRECTED ACCORDING TO B. BACASTOW,
+!!                                 PERS. COMMUN., 1988)
+!!      *OX0*              REAL    VOLUMETRIC SOLUBILITY CONSTANT A1 FOR
+!!                                 THE SOLUBILITY OF OXYGEN IN ML/L FROM
+!!                                 MOIST AIR AT ONE ATMOSPHERE (WEISS, 1970)
+!!      *OX1*              REAL    VOLUMETRIC SOLUBILITY CONSTANT A2 FOR
+!!                                 THE SOLUBILITY OF OXYGEN IN ML/L FROM
+!!                                 MOIST AIR AT ONE ATMOSPHERE (WEISS, 1970)
+!!      *OX2*              REAL    VOLUMETRIC SOLUBILITY CONSTANT A3 FOR
+!!                                 THE SOLUBILITY OF OXYGEN IN ML/L FROM
+!!                                 MOIST AIR AT ONE ATMOSPHERE (WEISS, 1970)
+!!      *OX3*              REAL    VOLUMETRIC SOLUBILITY CONSTANT A4 FOR
+!!                                 THE SOLUBILITY OF OXYGEN IN ML/L FROM
+!!                                 MOIST AIR AT ONE ATMOSPHERE (WEISS, 1970)
+!!      *OX4*              REAL    VOLUMETRIC SOLUBILITY CONSTANT B1 FOR
+!!                                 THE SOLUBILITY OF OXYGEN IN ML/L FROM
+!!                                 MOIST AIR AT ONE ATMOSPHERE (WEISS, 1970)
+!!      *OX5*              REAL    VOLUMETRIC SOLUBILITY CONSTANT B2 FOR
+!!                                 THE SOLUBILITY OF OXYGEN IN ML/L FROM
+!!                                 MOIST AIR AT ONE ATMOSPHERE (WEISS, 1970)
+!!      *OX6*              REAL    VOLUMETRIC SOLUBILITY CONSTANT B3 FOR
+!!                                 THE SOLUBILITY OF OXYGEN IN ML/L FROM
+!!                                 MOIST AIR AT ONE ATMOSPHERE (WEISS, 1970)
+!!      *T*                REAL    DUMMY VARIABLE, ABSOLUTE SEAWATER TEMP.
+!!      *qtt*                REAL    DUMMY VARIABLE, ABSOLUTE SEAWATER TEMP.,
+!!                                 DIVIDED BY 100.
+!!      *S*                REAL    DUMMY VARIABLE, SALINITY
+!!      *CL*               REAL    CHLORINITY (CL(O/OO)=S(O/OO)/1.80655)
+!!                                 AFTER WOOSTER ET AL., 1969
+!!                                 (C.F. KALLE/DIETRICH , P. 60)
+!!      *CEK0*             REAL    LN(K0), LOGARITHM OF CO2 SOLUBILITY IN
+!!                                 SEAWATER IN VOLUMETRIC UNITS (EQ. 12 IN
+!!                                 WEISS, 1974)
+!!      *CK1*              REAL    PK1-VALUE (K1= 1. H2CO3 DISSOC. CONST..),
+!!                                 AFTER EDMOND AND GIESKES (1970)
+!!      *CK2*              REAL    PK2-VALUE (K2= 2. H2CO3 DISSOC. CONST..),
+!!                                 AFTER EDMOND AND GIESKES (1970)
+!!      *CKB*              REAL    PKB-VALUE (KB= 1. H3BO3 DISSOC. CONST..)
+!!                                 AFTER EDMOND AND GIESKES (1970)
+!!      *CKW*              REAL    PKW-VALUE (KW=H2O DISSOC. CONST.) AFTER
+!!                                 DICKSON AND RILEY (1979)
+!!      *OXY*              REAL    LN(C*), LOGARITHM OF O2 SOLUBILITY IN
+!!                                 SEAWATER IN VOLUMETRIC UNITS (EQ. 4 IN
+!!                                 WEISS, 1970)
+!!      *AK1*              REAL    K1, 1. H2CO3 DISSOC. CONSTANT
+!!                                 (EDMOND AND GIESKES, 1970)
+!!      *AK2*              REAL    K2, 2. H2CO3 DISSOC. CONSTANT
+!!                                 (EDMOND AND GIESKES, 1970)
+!!      *AKB*              REAL    KB, 1. H3BO3 DISSOC. CONSTANT
+!!                                 (EDMOND AND GIESKES, 1970)
+!!      *AKW*              REAL    KW, H2O DISSOC. CONSTANT, LIT ?
+!!      *AK0*              REAL    EXP(LN(K0))=K0 CO2 SOLUBILITY IN SEAWATER
+!!                                 IN VOLUMETRIC UNITS (ML/L)(WEISS, 1974,
+!!                                 CF. EQ. 12)
+!!      *RRR*              REAL    SIGMA-T IN OCEAN MODEL, DUMMY VARIABLE
+!!                                 (USED FOR CALCULATION OF TOTAL BORAT
+!!                                 CONCENTRATION) (SIGMA-T=RHO(S,T,0)/1000.)
+!!      *BOR*              REAL    TOTAL BORAT CONCENTRATION , DUMMY VAR.
+!!      *P*                REAL    APPROXIMATE PRESSURE AT DEPTH OF U-POINTS
+!!                                 IN BAR, DUMMY VARIABLE
+!!      *AKSP0*            REAL    CACO3 SOLUBILITY PRODUCT AT P=0 DBAR
+!!                                 ACCORDING TO INGLE (1800), EQ. 6; THE
+!!                                 CITATION OF CULBERSON AND PYTKOWICZ, 1968,
+!!                                 IN BROECKER ET AL., 1982, IS PRESUMABLY
+!!                                 NOT CORRECT)
+!!      *AKSP(jpi,jpj,jpk)*   REAL    CACO3 SOLUBILITY PRODUCT AT IN SITU PRESSURE
+!!                                 FOLLOWING THE PROCEDURE DESCRIBED IN EDMOND
+!!                                 AND GIESKES (1970), P. 1285
+!!      *CP*               REAL    TERM IN EXPONENT OF EQUATIONS FOR PRESSURE
+!!                                 CORRECTION OF DISSOC. CONSTANTS (CARB.,
+!!                                 BOR. ACID) AND CALCITE SOLUB. PRODUCT
+!!                                 (CF. BROECKER ET AL., 1982, EDMOND AND
+!!                                 GIESKES, 1970)
+!!      *TC*               REAL    TEMPERATURE AT OCEAN GRID POINTS (DEG C),
+!!                                 DUMMY VARIABLE
+!!      *KI*               INTEGER COUNTS ITERATIONS FOR NEWTON-RAPHSON METHOD
+!!                                 FOR INITIATION OF [CO3--] AND [H+]
+!!      *H*                REAL    [H+], DUMMY VARIABLE
+!!      *R*                REAL    [CO3--] [MOLE/L], DUMMY VARIABLE
+!!      *ALKA*             REAL    GIVEN ALKALINITY [EQV/L], DUMMY VARIABLE
+!!      *C*                REAL    GIVEN [SUM(12C)O2] [MOLE/L], DUMMY VARIABLE
+!!      *A*                REAL    ALKALINITY [EQV/L] AS FUNCTION OF [CO3--]
+!!                                 AND [H+], DUMMY VARIABLE
+!!      *DCDS*             REAL    LOCAL DERIVATIVE
+!!                                 [SUM(CO2)]([CO3--],H+]) -> [CO3--]
+!!      *DADS*             REAL    LOCAL DERIVATIVE
+!!                                 [ALK]([CO3--],H+]) -> [CO3--]
+!!      *DCDH*             REAL    LOCAL DERIVATIVE
+!!                                 [SUM(CO2)]([CO3--],H+]) -> [H+]
+!!      *DADH*             REAL    LOCAL DERIVATIVE
+!!                                 [ALK]([CO3--],H+]) -> [H+]
+!!      *F*                REAL    FUNCTION [ALK] GIVEN MINUS [ALK] IN TERMS
+!!                                 OF [CO3--] AND [H+]
+!!      *CC*               REAL    [SUM(CO2)] [MOLE/L] AS FUNCTION OF
+!!                                 [CO3--] AND [H+], DUMMY VARIABLE
+!!      *GG*               REAL    FUNCTION [SUM(CO2)] GIVEN MINUS [SUM(CO2)]
+!!                                 IN TERMS OF [CO3--] AND [H+]
+!!      *DETI*             REAL    DETERMINANT WITH LOCAL DERIVATIVES FOR
+!!                                 NEWTON-RAPHSON ITERATION
+!!
+      REAL, PUBLIC, SAVE :: akcc1, akcc2, akcc3, akcc4
+      REAL, PUBLIC, SAVE :: arafra, calfra, aracal, devk1, devk2, devkb
+      REAL, PUBLIC, SAVE :: devk1t, devk2t, devkbt, devkst, devks
+      REAL, PUBLIC, SAVE :: bor1, bor2, c00, c01, c02, c03, c04, c05, c10, c11
+      REAL, PUBLIC, SAVE :: c12, c13, c20, c21, c22, c23, cb0, cb1, cb2, cb3
+      REAL, PUBLIC, SAVE :: c14, c15, c16, c17, c24, c25, c26, c27
+      REAL, PUBLIC, SAVE :: cb4, cb5, cb6, cb7, cb8, cb9, cb10, cb11
+      REAL, PUBLIC, SAVE :: cw3, cw4, cw5, cw6
+      REAL, PUBLIC, SAVE :: cw0, cw1, cw2, ox0, ox1, ox2, ox3, ox4
+      REAL, PUBLIC, SAVE :: cek0, ckb, ck1, ck2, ckw, ak1, ak2, ak0
+      REAL, PUBLIC, SAVE :: bor, aksp0, ah
+      REAL, PUBLIC, SAVE :: smicr, thousi, perc, third
+      REAL, PUBLIC, SAVE :: salchl, temzer, rgas, oxyco, ox5
+      REAL, PUBLIC, SAVE :: oxy, rrr
+      REAL, PUBLIC, SAVE :: qtt
+      REAL, PUBLIC, SAVE ::  cpexp
+!!! note: dimension (jpi,jpj,3)
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: chemc
+        
+!!
+!!----------------------------------------------------------------------
+!!
+!! COMMON/cotcon/ : Time variables
+!!  rjjss = seconds in day (=rjjhh*rhhmm*rmmss defined in OPA_SRC/DOM)
+!!  raajj = number of days in year
+!!  raass =  number of seconds in year
+!!  rmoss = number of seconds in month (= raass/12)
+!!
+      REAL, PUBLIC, SAVE :: rfact, rfactr, xtvit, rjjss, raajj, raass, rmoss
+!!
+!! ---------------------------------------------------------------------
+!!
+    
+!!
+!!----------------------------------------------------------------------
+!!
+!! COMMON/cotgas/ : Gas exchange
+!!
+!! ---------------------------------------------------------------------
+!!
+      REAL, PUBLIC, SAVE :: qcumul(jptra)
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:) :: kgwanin
+!
+!!----------------------------------------------------------------------
+!!
+!! COMMON/pertco2/ : read real atmospheric CO2 data
+!!
+!! -----------------------------------------------------------------
+!!
+      INTEGER, PUBLIC, PARAMETER :: nmaxrec=4512
+      REAL, PUBLIC, SAVE :: yrco2(nmaxrec),sipco2(nmaxrec),pco2at,pn2oat,pch4at
+      INTEGER, PUBLIC, SAVE :: nutatm
+      REAL, PUBLIC :: yrcfc(336),sipcfc(336,3,2)
+!!----------------------------------------------------------------------
+!!
+!! COMMON/cotnam/ : biogeochemical parameters in namelist.trc.sms
+!!
+!! ---------------------------------------------------------------------
+!! rn_km?phy = MICHAELIS MENTEN CONSTANTS OF PRODUCTIVITY (HALF SATU-
+!!             RATION CONSTANT; NUTRIENT CONCENTRATION, WHERE NUTRIENT
+!!             UPTAKE VELOCITY IS HALF ITS POTENTIAL MAXIMUM VALUE;
+!!             MICHAELIS & MENTEN(1913)
+!!
+!! aggregation parameters
+!!
+      REAL, PUBLIC, SAVE :: rn_ag1poc,rn_ag2poc,rn_ag3poc,rn_ag4poc,rn_ag5doc,rn_ag6doc,rn_ag7doc
+      REAL, PUBLIC, SAVE :: rn_singoc,rn_snkgoc,rn_snkpoc,rn_snkspd
+!!
+!! river fluxes
+!!
+      REAL, PUBLIC, SAVE :: rn_rivdic,rn_rivdoc,rn_rivfer,rn_rivnit,rn_rivpo4,rn_rivpoc,rn_rivsil
+!!
+!! Fe parameters
+!!
+      REAL, PUBLIC, SAVE :: rn_fersol,rn_silsol,rn_sedfer,rn_scofer,rn_scmfer,rn_ligdep,rn_ligfer,rn_liglat
+!!
+!! biological parameters for preferences 
+!!
+      INTEGER, PUBLIC, SAVE :: jpfoo
+      REAL, PUBLIC, SAVE :: rn_gbadoc,rn_gbapoc,rn_gbagoc,rn_gbagon
+      REAL, PUBLIC, SAVE :: rn_readsi,rn_remdsi,rn_retdsi
+      REAL, PUBLIC, SAVE :: rn_prfzoo(jpzft,jppoc:jpdia+jppft-1)
+!!
+!! biological parameters for heterotrophs 
+!!
+      INTEGER, PUBLIC, SAVE :: nn_sizzoo(jpzft)
+      REAL, PUBLIC, SAVE :: rn_ggebac,rn_ggtbac,rn_ggezoo(jpzft)
+      REAL, PUBLIC, SAVE :: rn_sigzoo(jpzft)
+      REAL, PUBLIC, SAVE :: rn_unazoo(jpzft)
+      REAL, PUBLIC, SAVE :: rn_gramin,rn_grazoo(jpzft),rn_grkzoo(jpzft)
+      REAL, PUBLIC, SAVE :: rn_grabac
+      REAL, PUBLIC, SAVE :: rn_kmobac,rn_kmfbac,rn_kmpbac
+      REAL, PUBLIC, SAVE :: rn_mormac,rn_motmac
+      REAL, PUBLIC, SAVE :: rn_morgel,rn_mosgel,rn_motgel
+      REAL, PUBLIC, SAVE :: rn_resbac,rn_reszoo(jpzft)
+      REAL, PUBLIC, SAVE :: rn_retbac,rn_retzoo(jpzft)
+      REAL, PUBLIC, SAVE :: rn_icemac,rn_trnmac
+!! PlankTOM12
+      REAL, PUBLIC, SAVE :: rn_forcal,rn_lysara,rn_pteara
+!!
+!! biological parameters for phytoplankton 
+!!
+      REAL, PUBLIC, SAVE :: rn_bsidia,rn_coccal,rn_disara,rn_discal,rn_disfor
+      REAL, PUBLIC, SAVE :: rn_ferbsi,rn_kmsbsi,rn_lyoco3,rn_lyscal,rn_munfix
+      REAL, PUBLIC, SAVE :: rn_nutthe,rn_rembac,rn_silbsi,rn_sildia
+      REAL, PUBLIC, SAVE :: rn_resphy(jpdia:jpdia+jppft-1)
+
+      REAL, PUBLIC, SAVE :: rn_docphy(jpdia:jpdia+jppft-1),rn_domphy(jpdia:jpdia+jppft-1)
+      REAL, PUBLIC, SAVE :: rn_kmnphy(jpdia:jpdia+jppft-1),rn_kmpphy(jpdia:jpdia+jppft-1)
+      REAL, PUBLIC, SAVE :: rn_mumpft(jpdia:jpdia+jppft-1)
+      REAL, PUBLIC, SAVE :: pcmax(jpdia:jpdia+jppft-1),xlim5(jpdia:jpdia+jppft-1)
+!!
+!! temperature-dependence for all PFTs
+!!
+      REAL, PUBLIC, SAVE :: rn_mutpft(jpbac:jpdia+jppft-1),rn_mudpft(jpbac:jpdia+jppft-1)
+!!
+!! parameters for the Fe-light model 
+!!
+      REAL, PUBLIC, SAVE :: rn_kmfphy(jpdia:jpdia+jppft-1), rn_rhfphy(jpdia:jpdia+jppft-1)      
+      REAL, PUBLIC, SAVE :: rn_qmaphy(jpdia:jpdia+jppft-1), rn_qmiphy(jpdia:jpdia+jppft-1)    
+      REAL, PUBLIC, SAVE :: rn_qopphy(jpdia:jpdia+jppft-1)
+!!
+!! other light parameters 
+!!
+      REAL, PUBLIC, SAVE :: rn_ekwgrn,rn_ekwred
+      REAL, PUBLIC, SAVE :: rn_alpphy(jpdia:jpdia+jppft-1)
+      REAL, PUBLIC, SAVE :: rn_kgrphy(jpdia:jpdia+jppft-1),rn_krdphy(jpdia:jpdia+jppft-1)
+      REAL, PUBLIC, SAVE :: rn_thmphy(jpdia:jpdia+jppft-1),rn_tliphy(jpdia:jpdia+jppft-1)    
+!!
+!!----------------------------------------------------------------------
+!!
+!! COMMON/cotham/ : biological parameters inherited from HAMOCC3
+!!
+!! ---------------------------------------------------------------------
+!!
+!! calcon = MEAN TOTAL [CA++] IN SEAWATER (MOLES/KG) 
+!!             (SEE BROECKER A. PENG, 1982, P. 26)
+!!             ([CA++](MOLES/KG)=1.026E-2*(S/35.) AFTER
+!!             CULKIN(1965), CF. BROECKER ET AL. 1982)
+!! alknut = REDFIELD RATIO MOLES N + TPO4 / MOLES C
+!!             (FOR CHANGE IN ALKALINITY DUE TO PRODUCTION/REMINE-
+!!             RALIZATION OF ORGANIC MATTER)
+!!             N:C=16:122, SEE Wolf-Gladrow et al. 2007
+!!
+!!             COMPOSITION OF PLANKTONIC MATERIAL AND RESPIRATION:
+!!             C106H263O110N16P + 138 O2 ->
+!!            -> 106 CO2 + 16 NO3- + HPO4(2-) + 122 H2O + 18 H+  ,
+!!             SEE DEGENS ET AL. (1984), P. 152
+!!      *PO4R*      REAL  RATIO (MOLES P)/(MOLES C) (REDFIELD RATIO P:C)
+!! ---------------------------------------------------------------------
+!! 
+      REAL, PUBLIC, SAVE :: alknut,ratn2c, ratc2n, rato2c
+      REAL, PUBLIC, SAVE :: calcon, plafr13, pdb, minfer
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:) :: fld,flu,flu16,zkgco2
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:) :: zkgo2,dpco2,pco2,cflx
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: prcaca,proara,prorca3,denitr
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: losara,loscal,losfor
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:  ) :: dust,mdept
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: dustmo
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) :: tgfunc
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: depdic,depdoc,deppoc
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: depnit,deppo4,depsil
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: depfer
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: atmdin
+      REAL, PUBLIC, SAVE :: extinp(7),sedcor(7)
+!!
+!!----------------------------------------------------------------------
+!!
+!! COMMON/cotbio/ : biological parameters inherited from PISCES
+!!
+!!----------------------------------------------------------------------
+!!
+      REAL, PUBLIC, SAVE :: zpdtmo, zdemi
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: bactge,delo2,etot
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: snkara,snkbfe,snkcal
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: snkdsi,snkgoc,snkgon
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: snkpoc,snksfe
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: xagg,xaggfe
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: xaggdoc
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: xscave,remdoc
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: rempoc,remgoc,remgon
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: remsfe,rembfe
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: remdsi,xaggdoc2
+!!
+!!----------------------------------------------------------------------
+!!
+!! COMMON/cotgom/ : biological parameters specific to PlankTOM
+!!
+!!----------------------------------------------------------------------
+!!
+      REAL, PUBLIC, SAVE :: dnsmin,ferat3,grizoo(2,jpfmx)!,ncf_fill
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:):: snkmax
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:,:) :: grazoo
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) :: grazoc,grazof
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) :: grapoc,grarem,grafer
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: losbsi
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: irondep,sidep
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) :: mgezoo
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) :: docphy
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:,:) :: prophy
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:,:) :: resphy
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: resbac
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: scamld,scabfe,scasfe
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:,:) :: stofoo
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) :: reszoo
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: tormac,torgel
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: rbafer,ubafer
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) :: dinpft
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: xlimbac
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: volumt
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:) :: icemac,trnmac,rcoast
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: prodt,ppt,pptdoc
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: tchl,out3d
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: dyphy,eliblu,elired
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: xvsink,zstre1
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) :: grazing,trophic
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:) :: out2d,ppint
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:,:) :: xlimpft
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:) :: ligfer
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: trnsed,remsed
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:) :: zkgcfc11,fluc11
+      REAL, PUBLIC, SAVE, ALLOCATABLE, DIMENSION(:,:,:) :: d14pro,d14res
+
+CONTAINS
+
+   INTEGER FUNCTION sms_planktom_alloc()
+      !!----------------------------------------------------------------------
+      !!        *** ROUTINE sms_planktom_alloc ***
+      !!----------------------------------------------------------------------
+      USE lib_mpp , ONLY: ctl_warn
+      INTEGER ::   ierr(10)        ! Local variables
+      !!----------------------------------------------------------------------
+      ierr(:) = 0
+      !*  Biological fluxes for light
+      ALLOCATE( etot(jpi,jpj,jpk), STAT=ierr(1) )
+      !
+      !*  CO2 cycle
+      ALLOCATE( akb3(jpi,jpj,jpk), ak13(jpi,jpj,jpk), ak23(jpi,jpj,jpk), &
+             &  aksara(jpi,jpj,jpk), aksp(jpi,jpj,jpk), co3(jpi,jpj,jpk),  hi(jpi,jpj,jpk),   &
+             &  pihi(jpi,jpj,jpk), pih2co3(jpi,jpj),   &
+             &  borat(jpi,jpj,jpk),hco3(jpi,jpj,jpk), h2co3(jpi,jpj),    &
+             &  akw3(jpi,jpj,jpk), chemc(jpi,jpj,6), discarb(jpi,jpj,jpk), STAT=ierr(2) )
+      !* Gas exchange
+      ALLOCATE ( kgwanin(jpi,jpj),  STAT=ierr(3) )
+      !*  biological parameters inherited from HAMOCC3
+      ALLOCATE( fld(jpi,jpj),flu(jpi,jpj),flu16(jpi,jpj), &
+             & zkgco2(jpi,jpj),zkgo2(jpi,jpj), &
+             & dpco2(jpi,jpj),pco2(jpi,jpj),cflx(jpi,jpj), &
+             & prcaca(jpi,jpj,jpk),proara(jpi,jpj,jpk), &
+             &  prorca3(jpi,jpj,jpk), &
+             & losara(jpi,jpj,jpk),loscal(jpi,jpj,jpk),losfor(jpi,jpj,jpk), &
+             &  denitr(jpi,jpj,jpk),dust(jpi,jpj),dustmo(jpi,jpj,12), &
+             & mdept(jpi,jpj),tgfunc(jpi,jpj,jpk,jpbac:jpdia+jppft-1),depdic(jpi,jpj,jpk), &
+             & depdoc(jpi,jpj,jpk),deppoc(jpi,jpj,jpk), &
+             & depnit(jpi,jpj,jpk),deppo4(jpi,jpj,jpk),depsil(jpi,jpj,jpk), &
+             & depfer(jpi,jpj,jpk),atmdin(jpi,jpj,jpk),   STAT=ierr(4) )
+      !* biological parameters inherited from pisces
+      ALLOCATE(  snkgoc(jpi,jpj,jpk),snkcal(jpi,jpj,jpk),delo2(jpi,jpj,jpk), &
+     &  snkara(jpi,jpj,jpk),snkpoc(jpi,jpj,jpk),snkgon(jpi,jpj,jpk),snksfe(jpi,jpj,jpk), &
+     &  snkbfe(jpi,jpj,jpk),snkdsi(jpi,jpj,jpk),xagg(jpi,jpj,jpk),xaggfe(jpi,jpj,jpk), &
+     &  xaggdoc(jpi,jpj,jpk), bactge(jpi,jpj,jpk),  &
+     &  xscave(jpi,jpj,jpk),remdoc(jpi,jpj,jpk), &
+     &  rempoc(jpi,jpj,jpk),remgoc(jpi,jpj,jpk),remgon(jpi,jpj,jpk), &
+     &  remsfe(jpi,jpj,jpk),rembfe(jpi,jpj,jpk), &
+     &  remdsi(jpi,jpj,jpk),xaggdoc2(jpi,jpj,jpk), &
+     &      STAT=ierr(5) )
+     !* biological parameters specific to PlankTOM
+      ALLOCATE( snkmax(jpk),grafer(jpi,jpj,jpk,jpzft), &
+     &    grazoo(jpi,jpj,jpk,jpzft,jppoc:jpdia+jppft-1), &
+       &  grazoc(jpi,jpj,jpk,jpzft),grazof(jpi,jpj,jpk,jpzft), &
+      &  grapoc(jpi,jpj,jpk,jpzft), &
+      &  grarem(jpi,jpj,jpk,jpzft), &
+      &  losbsi(jpi,jpj,jpk), &
+      &  irondep(jpi,jpj,jpk),sidep(jpi,jpj,jpk), &
+      &  mgezoo(jpi,jpj,jpk,jpzft), &
+      &  docphy(jpi,jpj,jpk,jpdia:jpdia+jppft-1), &
+      &  prophy(jpi,jpj,jpk,jpdia:jpdia+jppft-1,3), &
+      &  resphy(jpi,jpj,jpk,jpdia:jpdia+jppft-1,3), &
+      &  resbac(jpi,jpj,jpk), &
+      &  scamld(jpi,jpj,jpk),scabfe(jpi,jpj,jpk),scasfe(jpi,jpj,jpk), &
+      &  stofoo(jpi,jpj,jpk,jppoc:jpdia+jppft-1,3),reszoo(jpi,jpj,jpk,jpzft), &
+      &  tormac(jpi,jpj,jpk), &
+      &  torgel(jpi,jpj,jpk), &
+      &  rbafer(jpi,jpj,jpk),ubafer(jpi,jpj,jpk), &
+      &  dinpft(jpi,jpj,jpk,jpdia:jpdia+jppft-1), &
+      &  xlimbac(jpi,jpj,jpk),volumt(jpi,jpj,jpk),grazing(jpi,jpj,jpk,3), &
+      &  prodt(jpi,jpj,jpk),ppint(jpi,jpj),ppt(jpi,jpj,jpk), &
+      &  pptdoc(jpi,jpj,jpk),trophic(jpi,jpj,jpk,3), &
+      &  tchl(jpi,jpj,jpk),out2d(jpi,jpj),out3d(jpi,jpj,jpk), &
+      &  dyphy(jpi,jpj,jpk),eliblu(jpi,jpj,jpk),elired(jpi,jpj,jpk), &
+      &  xlimpft(jpi,jpj,jpk,jpdia:jpdia+jppft-1),ligfer(jpj,jpk), &
+      &  zstre1(jpi,jpj,jpk),xvsink(jpi,jpj,jpk),trnsed(jpi,jpj,jpdsi:jpgoc), &
+      &  remsed(jpi,jpj,jpdsi:jpgoc), &
+      &  icemac(jpi,jpj),trnmac(jpi,jpj),rcoast(jpi,jpj), &
+      &  zkgcfc11(jpi,jpj),fluc11(jpi,jpj),  STAT=ierr(6) )
+      ALLOCATE( d14pro(jpi,jpj,jpk),d14res(jpi,jpj,jpk),&
+      &  STAT=ierr(10) )
+      sms_planktom_alloc = MAXVAL( ierr )
+      !
+      IF( sms_planktom_alloc /= 0 )   CALL ctl_warn('sms_planktom_alloc: failed to allocate arrays')
+ END FUNCTION sms_planktom_alloc
+   !!======================================================================  
+END MODULE sms_planktom

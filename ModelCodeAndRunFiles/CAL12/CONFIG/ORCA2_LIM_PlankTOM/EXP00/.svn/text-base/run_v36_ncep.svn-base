@@ -1,0 +1,93 @@
+#!/bin/sh
+if [ $# -lt 3 ]; then
+  echo "Not enough arguments: usage -> run begin_year end_year simulation_mnmonic"
+  exit 1
+fi
+YEARN=$1
+YEARL=$2
+ENAM=$3
+echo $ENAM > tmp
+VERSION=`awk '{ n = split($1, parts, "_"); printf("%s", parts[1]) }' tmp`
+SIM=`awk '{ n = split($1, parts, "_"); printf("%s", parts[n]) }' tmp`
+eval YEARP=`expr $YEARN - 1`
+\rm tmp
+export YEARN YEARL YEARP ENAM VERSION SIM
+echo $YEARN $YEARL $ENAM $VERSION $SIM
+if [ ! -d ~/scratch/$ENAM ]; then
+  mkdir ~/scratch/$ENAM
+fi
+cd ~/scratch/$ENAM
+newlink () { if [ ! -f $2 ]; then ln -s $1 $2; fi }
+recover () { if [ ! -f $2 ]; then cp -p $1 $2; fi }
+choose () { if [ -f $1 ]; then cp $1 $3; else cp $2 $3 || exit 159; fi }
+newlink ~e031/Input/V3.6/ahmcoef.nc ahmcoef.nc
+newlink ~e031/Input/global_co2_merged_2018.txt atmco2.dat
+newlink ~e031/Input/V3.6/bathy_level.nc bathy_level.nc
+newlink ~e031/Input/V3.6/bathy_meter.nc bathy_meter.nc
+newlink ~e198/data/Forcev33/bathy.orca.nc bathy.orca.nc
+newlink ~e031/Input/V3.6/coordinates.nc coordinates.nc
+newlink ~e031/Input/V3.6/data_1m_potential_temperature_nomask.nc data_1m_potential_temperature_nomask.nc
+newlink ~e031/Input/V3.6/data_1m_salinity_nomask.nc data_1m_salinity_nomask.nc
+newlink ~e031/Input/V3.6/geothermal_heating.nc geothermal_heating.nc
+newlink ~e031/Input/river.nc river.nc
+newlink ~e198/data/Forcev33/ndeposition.orca.nc ndeposition.nc
+newlink ~e031/Input/V3.6/runoff_core_monthly.nc runoff_core_monthly.nc
+newlink ~e031/Input/V3.6/K1rowdrg.nc K1rowdrg.nc
+newlink ~e031/Input/V3.6/M2rowdrg.nc M2rowdrg.nc
+newlink ~e031/Input/V3.6/chlorophyll.nc chlorophyll.nc
+newlink ~e031/Input/V3.6/mask_itf.nc mask_itf.nc
+grep key_planktom10 ~/nemo_v3.6/TOM12/CONFIG/ORCA2_LIM_PlankTOM/cpp_ORCA2_LIM_PlankTOM.fcm > tmp
+if [ -s tmp ]
+  then TOM=tom10
+  else TOM=tom12
+fi
+grep key_trc_dms ~/nemo_v3.6/TOM12/CONFIG/ORCA2_LIM_PlankTOM/cpp_ORCA2_LIM_PlankTOM.fcm > tmp
+if [ -s tmp ]
+  then DMS=dms
+fi
+grep key_trc_n2o ~/nemo_v3.6/TOM12/CONFIG/ORCA2_LIM_PlankTOM/cpp_ORCA2_LIM_PlankTOM.fcm > tmp
+if [ -s tmp ]
+  then N2O=n2o
+fi
+grep key_trc_ch4 ~/nemo_v3.6/TOM12/CONFIG/ORCA2_LIM_PlankTOM/cpp_ORCA2_LIM_PlankTOM.fcm > tmp
+if [ -s tmp ]
+  then CH4=ch4
+fi
+recover ~/nemo_v3.6/$VERSION/CONFIG/ORCA2_LIM_PlankTOM/EXP00/iodef_${TOM}${DMS}${N2O}${CH4}.xml iodef.xml
+recover ~/nemo_v3.6/$VERSION/CONFIG/ORCA2_LIM_PlankTOM/EXP00/field_def_${TOM}${DMS}${N2O}${CH4}.xml field_def.xml
+recover ~/nemo_v3.6/$VERSION/CONFIG/ORCA2_LIM_PlankTOM/EXP00/domain_def.xml domain_def.xml
+recover ~/nemo_v3.6/$VERSION/CONFIG/ORCA2_LIM_PlankTOM/EXP00/namelist_cfg namelist_cfg
+recover ~/nemo_v3.6/$VERSION/CONFIG/ORCA2_LIM_PlankTOM/EXP00/namelist_ref_ncep namelist_ref
+recover ~/nemo_v3.6/$VERSION/CONFIG/ORCA2_LIM_PlankTOM/EXP00/namelist_ice_cfg namelist_ice_cfg
+recover ~/nemo_v3.6/$VERSION/CONFIG/ORCA2_LIM_PlankTOM/EXP00/namelist_ice_ref namelist_ice_ref
+  newlink ~e198/Input/restart_CTR2_1989/dust.Jickells2005.times035.ORCA.nc dust.orca.nc
+  recover ~/nemo_v3.6/TOM12/CONFIG/ORCA2_LIM_PlankTOM/EXP00/namelist.trc.sms_${TOM} namelist.trc.sms
+  if [ ! -f restart_trc_0000.nc ];then
+    if [ -L restart_trc_0000.nc ];then echo 'broken restart_trc_0000.nc';exit;fi
+    if [ $YEARP -lt 1947 ]
+      then newlink ~e031/Input/restart_18991231_trc_GLODAPv2_mementoN2X_O2Bianchi_pPFTN.nc restart_trc.nc
+
+      else newlink ~e031/Input/restart_19471231_trc_GLODAPv2_mementoN2X_O2Bianchi_pPFTN.nc restart_trc.nc
+    fi
+  fi
+recover ~/nemo_v3.6/TOM12/CONFIG/ORCA2_LIM_PlankTOM/EXP00/namelist_top_cfg namelist_top_cfg
+recover ~/nemo_v3.6/TOM12/CONFIG/ORCA2_LIM_PlankTOM/EXP00/namelist_top_ref_${TOM}${DMS}${N2O}${CH4} namelist_top_ref
+recover ~/nemo_v3.6/$VERSION/CONFIG/ORCA2_LIM_PlankTOM/EXP00/dgom dgom
+recover ~/nemo_v3.6/$VERSION/CONFIG/ORCA2_LIM_PlankTOM/EXP00/run_totals.sh run_totals.sh
+recover ~/nemo_v3.6/TOM12/CONFIG/ORCA2_LIM_PlankTOM/BLD/bin/nemo.exe opa
+recover /gpfs/software/xios-1.0/gcc/bin/xios_server.exe xios_server.exe
+if [ -f rank001 ]; then rm rank* ; fi
+if [ ! -f restart_0000.nc ];then
+  if [ -L restart_0000.nc ];then echo 'broken restart_0000.nc';exit;fi
+  newlink ~e031/Input/restart_${YEARP}1231_opa_obs_v3.6_ncep.nc restart.nc
+fi
+if [ ! -f restart_ice_in_0000.nc ];then
+  if [ -L restart_ice_in_0000.nc ];then echo 'broken restart_ice_in_0000.nc';exit;fi
+  newlink ~e031/Input/restart_ice_v3.6.nc restart_ice_in.nc
+fi
+bsub -J${SIM}${YEARN} < dgom
+if [ ! -f ${ENAM}.txt ]; then
+  echo 'Describe this simulation' >> ${ENAM}.txt
+  vi ${ENAM}.txt
+fi
+if [ ! -f code.tar ];then cd ~/nemo_v3.6/TOM12/NEMO/ ; tar chf ~/scratch/$ENAM/code.tar . ; fi
