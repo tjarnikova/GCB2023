@@ -8,6 +8,8 @@ Contents:
     - Note: currently `runGCB.bsub` requires some python packages that are contained in an environment called swamp2 (notably arrow), if you are running this in the future and it's not working, check imports.
     - scripts used to make each variable are documented in SPREADSHEET (see References)
 - `./notebooks` contains notebooks for visualizing outputs
+- `./ModelCodeAndRunFiles` contains the archive of the model Fortran code and associated run files 
+
 
 References:
 - The following notion page documents the code, forcing, run id's, etc: [NOTION](https://www.notion.so/GCB-2023-run-specifications-and-monitor-setup-81add128b34a4d87a7630e03fc542ee3)
