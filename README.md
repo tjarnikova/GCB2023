@@ -2,7 +2,7 @@ This folder contains scripts and outputs for the greenocean group's Global Carbo
 
 Contents:
 
-- `./submissionData2023`: contains data (not available on github), we are using model version CAL12
+- `./submissionData2023`: contains data (not available on github), we are using model version RIV12
 - `GCB2023_ocean_model_protocol_final.pdf`: protocol as received from J. Hauck
 - `./scripts` contains scripts that produce output, with the batch submission file `runGCB.bsub`, that can be run using `sbatch < runGCB.bsub` 
     - Note: currently `runGCB.bsub` requires some python packages that are contained in an environment called swamp2 (notably arrow), if you are running this in the future and it's not working, check imports.
